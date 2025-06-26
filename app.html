@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediApp Free - Resuelve Discusiones con IA</title>
+    <style>
+        :root {
+            --navy: #0a192f;
+            --light-blue: #64ffda;
+            --light-gray: #ccd6f6;
+            --dark-navy: #020c1b;
+            --success: #64ffda;
+            --error: #ff6b6b;
+            --mistral-purple: #a78bfa;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark-navy) 0%, var(--navy) 100%);
+            color: var(--light-gray);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(10, 25, 47, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--mistral-purple);
+            font-size: 2.3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .subtitle {
+            color: var(--mistral-purple);
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .free-badge {
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--mistral-purple);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0 20px;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (min-width: 768px) {
+            .input-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .input-group {
+            background: rgba(30, 58, 138, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        
+        .input-group:hover {
+            transform: translateY(-3px);
+            border-color: var(--mistral-purple);
+        }
+        
+        .input-group h3 {
+            color: var(--mistral-purple);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--mistral-purple);
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #1e3a8a;
+            border-radius: 8px;
+            background: rgba(30, 58, 138, 0.3);
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--mistral-purple);
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+        }
+        
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 16px 30px;
+            background: var(--mistral-purple);
+            color: var(--navy);
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        button:hover {
+            background: #8b5cf6;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.3);
+        }
+        
+        button:disabled {
+            background: #6d28d9;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-container {
+            background: rgba(167, 139, 250, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .result-header h2 {
+            color: var(--mistral-purple);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-content {
+            background: rgba(10, 25, 47, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            line-height: 1.8;
+            min-height: 150px;
+            border: 1px solid rgba(167, 139, 250, 0.1);
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            padding: 30px 0;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(167, 139, 250, 0.2);
+            border-top: 5px solid var(--mistral-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: var(--error);
+            background: rgba(255, 107, 107, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .api-info {
+            background: rgba(30, 58, 138, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(167, 139, 250, 0.1);
+        }
+        
+        .api-info h3 {
+            color: var(--mistral-purple);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .model-badge {
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--mistral-purple);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .key-input {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .key-input input {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .key-input button {
+            max-width: 120px;
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(204, 214, 246, 0.6);
+        }
+        
+        .token-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                MediApp Mistral
+            </h1>
+            <p class="subtitle">Resuelve discusiones con IA gratuita y confiable</p>
+            <div class="free-badge">Modelo Gratuito • Sin Costos • Alta Disponibilidad</div>
+        </header>
+        
+        <div class="api-info">
+            <h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Configuración Requerida
+            </h3>
+            <p>Para usar esta aplicación, necesitas una API Key gratuita de OpenRouter:</p>
+            
+            <div class="key-input">
+                <input type="password" id="apiKeyInput" placeholder="Pega tu API Key aquí">
+                <button id="saveKeyBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Guardar
+                </button>
+            </div>
+            
+            <p>1. Regístrate en <a href="https://openrouter.ai" target="_blank" style="color: var(--mistral-purple);">OpenRouter</a><br>
+            2. Crea una API Key en <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--mistral-purple);">tu panel de control</a><br>
+            3. Pega la clave arriba y haz clic en Guardar</p>
+        </div>
+        
+        <div class="input-grid">
+            <div class="input-group">
+                <h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Persona 1
+                </h3>
+                <label for="persona1">Nombre:</label>
+                <input type="text" id="persona1" placeholder="Ej: María">
+                
+                <label for="punto1">Punto de vista:</label>
+                <textarea id="punto1" placeholder="Describe tu perspectiva..."></textarea>
+                <div class="token-counter">Tokens: <span id="tokenCount1">0</span>/500</div>
+            </div>
+            
+            <div class="input-group">
+                <h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Persona 2
+                </h3>
+                <label for="persona2">Nombre:</label>
+                <input type="text" id="persona2" placeholder="Ej: Carlos">
+                
+                <label for="punto2">Punto de vista:</label>
+                <textarea id="punto2" placeholder="Describe tu perspectiva..."></textarea>
+                <div class="token-counter">Tokens: <span id="tokenCount2">0</span>/500</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="resolverBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Resolver Discusión
+            </button>
+        </div>
+        
+        <div class="error" id="errorContainer"></div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-header">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    Mediación IA
+                </h2>
+                <span class="model-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    Mistral 7B (Free)
+                </span>
+            </div>
+            <div class="result-content" id="respuestaIA"></div>
+        </div>
+        
+        <footer>
+            <p>MediApp Mistral - Resolución de conflictos con IA &copy; 2023</p>
+            <p style="font-size: 0.8rem; opacity: 0.6; margin-top: 5px;">Usa el modelo gratuito mistralai/mistral-7b-instruct:free</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const resolverBtn = document.getElementById('resolverBtn');
+            const resultContainer = document.getElementById('resultContainer');
+            const respuestaIA = document.getElementById('respuestaIA');
+            const errorContainer = document.getElementById('errorContainer');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const saveKeyBtn = document.getElementById('saveKeyBtn');
+            const tokenCount1 = document.getElementById('tokenCount1');
+            const tokenCount2 = document.getElementById('tokenCount2');
+            const punto1Input = document.getElementById('punto1');
+            const punto2Input = document.getElementById('punto2');
+            
+            // Contador de tokens
+            function countTokens(text) {
+                // Estimación simple: 1 token ≈ 4 caracteres en español
+                return Math.ceil(text.length / 4);
+            }
+            
+            function updateTokenCounters() {
+                tokenCount1.textContent = countTokens(punto1Input.value);
+                tokenCount2.textContent = countTokens(punto2Input.value);
+            }
+            
+            punto1Input.addEventListener('input', updateTokenCounters);
+            punto2Input.addEventListener('input', updateTokenCounters);
+            
+            // Cargar API Key guardada
+            const savedKey = localStorage.getItem('openRouterApiKey');
+            if (savedKey) {
+                apiKeyInput.value = savedKey;
+            }
+            
+            // Guardar API Key
+            saveKeyBtn.addEventListener('click', () => {
+                if (apiKeyInput.value) {
+                    localStorage.setItem('openRouterApiKey', apiKeyInput.value);
+                    showMessage("API Key guardada correctamente", "success");
+                } else {
+                    showMessage("Por favor ingresa una API Key", "error");
+                }
+            });
+            
+            resolverBtn.addEventListener('click', resolverDiscusion);
+            
+            async function resolverDiscusion() {
+                // Obtener API Key
+                const API_KEY = localStorage.getItem('openRouterApiKey') || apiKeyInput.value;
+                
+                if (!API_KEY) {
+                    showMessage("Por favor ingresa tu API Key primero", "error");
+                    return;
+                }
+                
+                // Obtener datos
+                const persona1 = document.getElementById('persona1').value;
+                const punto1 = document.getElementById('punto1').value;
+                const persona2 = document.getElementById('persona2').value;
+                const punto2 = document.getElementById('punto2').value;
+                
+                // Validación básica
+                if (!persona1 || !punto1 || !persona2 || !punto2) {
+                    showMessage("Por favor completa todos los campos", "error");
+                    return;
+                }
+                
+                // Validar longitud
+                if (countTokens(punto1) > 500 || countTokens(punto2) > 500) {
+                    showMessage("Cada punto de vista debe tener menos de 500 tokens", "error");
+                    return;
+                }
+                
+                // Ocultar errores
+                errorContainer.style.display = 'none';
+                
+                // Mostrar carga
+                resolverBtn.disabled = true;
+                resolverBtn.innerHTML = `
+                    <div class="spinner" style="width: 20px; height: 20px; border-width: 3px;"></div>
+                    Analizando...
+                `;
+                
+                // Mostrar contenedor de resultados
+                resultContainer.style.display = 'block';
+                respuestaIA.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>La IA está analizando ambos puntos de vista...</p>
+                    </div>
+                `;
+                
+                try {
+                    // Construir prompt optimizado para Mistral
+                    const prompt = `[Instrucciones]
+Actúa como mediador neutral en una discusión. Sigue estos pasos:
+
+1. ANALIZAR: Reconoce y valida ambas perspectivas mostrando empatía
+2. PUNTO COMÚN: Identifica al menos 1 área de acuerdo entre ${persona1} y ${persona2}
+3. SOLUCIONES: Propón 2-3 soluciones prácticas y específicas
+4. TONO: Usa lenguaje positivo, constructivo y coloquial
+5. FORMATO: Máximo 150 palabras. Usa emojis relevantes.
+
+[Perspectiva de ${persona1}]
+${punto1}
+
+[Perspectiva de ${persona2}]
+${punto2}
+
+[Mediación IA]`;
+                    
+                    // Llamar a OpenRouter API con modelo Mistral
+                    const respuesta = await callOpenRouterAPI(prompt, API_KEY);
+                    
+                    // Mostrar resultado
+                    respuestaIA.innerHTML = respuesta.replace(/\n/g, '<br>');
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    showMessage(`Error: ${error.message}`, "error");
+                } finally {
+                    resolverBtn.disabled = false;
+                    resolverBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Resolver Discusión
+                    `;
+                }
+            }
+            
+            async function callOpenRouterAPI(prompt, apiKey) {
+                try {
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": "https://mediapp.com",
+                            "X-Title": "MediApp"
+                        },
+                        body: JSON.stringify({
+                            "model": "mistralai/mistral-7b-instruct:free", // Modelo Mistral gratuito
+                            "messages": [
+                                {
+                                    "role": "user",
+                                    "content": prompt
+                                }
+                            ],
+                            "max_tokens": 500,
+                            "temperature": 0.7
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        let errorMsg = `Error HTTP: ${response.status}`;
+                        
+                        // Mensajes de error más específicos
+                        if (errorData.error?.message) {
+                            errorMsg = errorData.error.message;
+                        }
+                        if (errorData.error?.provider_message) {
+                            errorMsg += ` (${errorData.error.provider_message})`;
+                        }
+                        
+                        throw new Error(errorMsg);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Manejar respuesta
+                    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                        return data.choices[0].message.content;
+                    } else {
+                        throw new Error("La API no devolvió una respuesta válida");
+                    }
+                    
+                } catch (error) {
+                    console.error("Error en la API:", error);
+                    throw new Error(`Error de API: ${error.message}`);
+                }
+            }
+            
+            function showMessage(message, type = "error") {
+                errorContainer.textContent = message;
+                errorContainer.style.display = 'block';
+                errorContainer.style.color = type === "error" ? "var(--error)" : "var(--success)";
+                errorContainer.style.borderColor = type === "error" ? "rgba(255, 107, 107, 0.3)" : "rgba(100, 255, 218, 0.3)";
+                errorContainer.style.background = type === "error" ? "rgba(255, 107, 107, 0.1)" : "rgba(100, 255, 218, 0.1)";
+                
+                // Scroll al mensaje
+                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Ejemplo de datos para pruebas
+            document.getElementById('persona1').value = "María";
+            document.getElementById('punto1').value = "Siento que no me ayudas en casa. Trabajo todo el día y cuando llego tengo que hacer todas las tareas del hogar yo sola. Me gustaría que colaboraras más.";
+            document.getElementById('persona2').value = "Carlos";
+            document.getElementById('punto2').value = "Yo también trabajo todo el día y cuando llego estoy agotado. Además, siento que no valoras el esfuerzo que hago por mantenernos económicamente. Me gustaría más reconocimiento.";
+            
+            // Inicializar contadores
+            updateTokenCounters();
+        });
+    </script>
+</body>
+</html>
